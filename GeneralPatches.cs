@@ -7,7 +7,7 @@ using HarmonyLib;
 namespace ModdedBugFix
 {
     [HarmonyPatch]
-    public class GeneralPatches
+    public static class GeneralPatches
     {
         [HarmonyPatch(typeof(AudioAnimatorListener), nameof(AudioAnimatorListener.Start))]
         [HarmonyPrefix]
