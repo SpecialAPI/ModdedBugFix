@@ -10,21 +10,21 @@ namespace ModdedBugFix.Mods
 {
     public static class Prismatism
     {
-        public static MethodInfo pff_cu_p = AccessTools.Method(typeof(Prismatism), nameof(ParrotsFeatherFix_CanUse_Prefix));
+        public static MethodInfo pff_cbu_p = AccessTools.Method(typeof(Prismatism), nameof(ParrotsFeatherFix_CanBeUsed_Prefix));
 
         public static void Patch()
         {
             var parrotsFeatherClass = AccessTools.TypeByName("katmod.ParrotsFeather");
             if(parrotsFeatherClass != null)
             {
-                var canuse = AccessTools.Method(parrotsFeatherClass, "CanBeUsed");
+                var canBeUsed = AccessTools.Method(parrotsFeatherClass, "CanBeUsed");
 
-                if (canuse != null)
-                    Plugin.HarmonyInstance.Patch(canuse, prefix: new(pff_cu_p));
+                if (canBeUsed != null)
+                    Plugin.HarmonyInstance.Patch(canBeUsed, prefix: new(pff_cbu_p));
             }
         }
 
-        public static bool ParrotsFeatherFix_CanUse_Prefix(ref bool __result, PlayerController user)
+        public static bool ParrotsFeatherFix_CanBeUsed_Prefix(ref bool __result, PlayerController user)
         {
             if(user == null || user.CurrentRoom == null || Camera.main == null)
             {

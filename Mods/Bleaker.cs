@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Dungeonator;
+using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
@@ -20,6 +21,11 @@ namespace ModdedBugFix.Mods
         public static MethodInfo coff_dtf_cn = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueFlick_CheckNearest));
         public static MethodInfo coff_dtf_n = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueflick_Null));
 
+        public static MethodInfo whf_u_t = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_Update_Transpiler));
+        public static MethodInfo whf_u_n_1 = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_Update_Nullcheck_1));
+        public static MethodInfo whf_u_n_2 = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_Update_Nullcheck_2));
+        public static MethodInfo whf_sva_p = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_SpawnVFXAttached_Prefix));
+
         public static void Patch()
         {
             var carrotClass = AccessTools.TypeByName("BleakMod.Carrot");
@@ -38,6 +44,19 @@ namespace ModdedBugFix.Mods
 
                 if (doTongueFlick != null)
                     Plugin.HarmonyInstance.Patch(doTongueFlick, ilmanipulator: new(coff_dtf_t));
+            }
+
+            var winchestersHatClass = AccessTools.TypeByName("BleakMod.WinchestersHat");
+            if(winchestersHatClass != null)
+            {
+                var update = AccessTools.Method(winchestersHatClass, "Update");
+                var spawnVFXAttached = AccessTools.Method(winchestersHatClass, "SpawnVFXAttached");
+
+                if (update != null)
+                    Plugin.HarmonyInstance.Patch(update, ilmanipulator: new(whf_u_t));
+
+                if (spawnVFXAttached != null)
+                    Plugin.HarmonyInstance.Patch(spawnVFXAttached, prefix: new(whf_sva_p));
             }
         }
 
@@ -99,6 +118,52 @@ namespace ModdedBugFix.Mods
         public static BeamController ChamberOfFrogsFix_DoTongueflick_Null()
         {
             return null;
+        }
+
+        public static void WinchestersHatFix_Update_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            ILLabel label = null;
+
+            if(!crs.TryFindNext(out var c, x => x.MatchBneUn(out label)))
+                return;
+
+            if (label == null)
+                return;
+
+            crs.Emit(OpCodes.Ldarg_0);
+            crs.Emit(OpCodes.Call, whf_u_n_1);
+            crs.Emit(OpCodes.Call, whf_u_n_2);
+
+            crs.Emit(OpCodes.Beq, label);
+        }
+
+        public static int WinchestersHatFix_Update_Nullcheck_1(PassiveItem p)
+        {
+            if(p == null || p.Owner == null || p.Owner.CurrentGun == null)
+                return 0;
+
+            return 1;
+        }
+
+        public static int WinchestersHatFix_Update_Nullcheck_2()
+        {
+            return 0;
+        }
+
+        public static bool WinchestersHatFix_SpawnVFXAttached_Prefix(PassiveItem __instance)
+        {
+            if (__instance == null || __instance.Owner == null)
+                return false;
+
+            if(__instance.Owner.specRigidbody == null || __instance.Owner.specRigidbody.PrimaryPixelCollider == null)
+                return false;
+
+            if(PhysicsEngine.Instance == null)
+                return false;
+
+            return true;
         }
     }
 }

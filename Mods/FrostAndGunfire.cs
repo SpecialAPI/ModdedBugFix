@@ -13,25 +13,27 @@ namespace ModdedBugFix.Mods
 {
     public static class FrostAndGunfire
     {
-        public static MethodInfo bf_cu_p = AccessTools.Method(typeof(FrostAndGunfire), nameof(BarterFix_CanUse_Prefix));
+        public static MethodInfo bf_cbu_p = AccessTools.Method(typeof(FrostAndGunfire), nameof(BarterFix_CanBeUsed_Prefix));
         public static MethodInfo bf_de_t = AccessTools.Method(typeof(FrostAndGunfire), nameof(BarterFix_DoEffect_Transpiler));
         public static MethodInfo bf_de_sin = AccessTools.Method(typeof(FrostAndGunfire), nameof(BarterFix_DoEffect_ShopItemNullcheck));
         public static MethodInfo bf_de_iln_f = AccessTools.Method(typeof(FrostAndGunfire), nameof(BarterFix_DoEffect_ItemsListNullcheck));
 
         public static MethodInfo mmf_bp_p = AccessTools.Method(typeof(FrostAndGunfire), nameof(MiniMushboomFix_BuildPrefab_Postfix));
 
+        public static MethodInfo bkf_cbu_p = AccessTools.Method(typeof(FrostAndGunfire), nameof(BloodiedKeyFix_CanBeUsed_Prefix));
+
         public static void Patch()
         {
             var barterClass = AccessTools.TypeByName("FrostAndGunfireItems.Barter");
             if (barterClass != null)
             {
-                var canuse = AccessTools.Method(barterClass, "CanBeUsed");
-                var doeffect = AccessTools.Method(barterClass, "DoEffect");
+                var canBeUsed = AccessTools.Method(barterClass, "CanBeUsed");
+                var doEffect = AccessTools.Method(barterClass, "DoEffect");
 
-                if (canuse != null)
-                    Plugin.HarmonyInstance.Patch(canuse, prefix: new(bf_cu_p));
-                if (doeffect != null)
-                    Plugin.HarmonyInstance.Patch(doeffect, ilmanipulator: new(bf_de_t));
+                if (canBeUsed != null)
+                    Plugin.HarmonyInstance.Patch(canBeUsed, prefix: new(bf_cbu_p));
+                if (doEffect != null)
+                    Plugin.HarmonyInstance.Patch(doEffect, ilmanipulator: new(bf_de_t));
             }
 
             var miniMushboomClass = AccessTools.TypeByName("FrostAndGunfireItems.MiniMushboom");
@@ -45,9 +47,18 @@ namespace ModdedBugFix.Mods
                 // If the MiniMushboom is already initialized for some reason
                 MiniMushboomFix_BuildPrefab_Postfix();
             }
+
+            var bloodiedKeyClass = AccessTools.TypeByName("FrostAndGunfireItems.BloodiedKey");
+            if(bloodiedKeyClass != null)
+            {
+                var canBeUsed = AccessTools.Method(bloodiedKeyClass, "CanBeUsed");
+
+                if (canBeUsed != null)
+                    Plugin.HarmonyInstance.Patch(canBeUsed, prefix: new(bkf_cbu_p));
+            }
         }
 
-        public static bool BarterFix_CanUse_Prefix(ref bool __result, PlayerController user)
+        public static bool BarterFix_CanBeUsed_Prefix(ref bool __result, PlayerController user)
         {
             if (user == null || user.CurrentRoom == null || user.carriedConsumables == null)
             {
@@ -101,6 +112,15 @@ namespace ModdedBugFix.Mods
 
             if (anim.HitAnimation != null)
                 anim.HitAnimation.Type = DirectionalAnimation.DirectionType.None;
+        }
+
+        public static bool BloodiedKeyFix_CanBeUsed_Prefix(ref bool __result, PlayerController user)
+        {
+            if (user != null && user.CurrentRoom != null && user.healthHaver != null)
+                return true;
+
+            __result = false;
+            return false;
         }
     }
 }

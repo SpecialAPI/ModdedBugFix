@@ -23,10 +23,10 @@ namespace ModdedBugFix.Mods
             var crystalBallClass = AccessTools.TypeByName("Blunderbeast.CrystalBall");
             if(crystalBallClass != null)
             {
-                var soulhook = AccessTools.Method(crystalBallClass, "SoulHook");
+                var soulHook = AccessTools.Method(crystalBallClass, "SoulHook");
 
-                if(soulhook != null)
-                    Plugin.HarmonyInstance.Patch(soulhook, ilmanipulator: new(cbf_sh_t));
+                if(soulHook != null)
+                    Plugin.HarmonyInstance.Patch(soulHook, ilmanipulator: new(cbf_sh_t));
             }
         }
 
