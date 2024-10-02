@@ -241,6 +241,7 @@
     <Compile Include="ILTools.cs" />
     <Compile Include="Mods\Bleaker.cs" />
     <Compile Include="Mods\FrostAndGunfire.cs" />
+    <Compile Include="Mods\Oddments.cs" />
     <Compile Include="Mods\Prismatism.cs" />
     <Compile Include="Mods\RetrashItems.cs" />
     <Compile Include="GeneralPatches.cs" />

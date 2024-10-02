@@ -35,6 +35,9 @@ namespace ModdedBugFix
 
             if(Chainloader.PluginInfos.ContainsKey("bleak.etg.abip"))
                 Bleaker.Patch();
+
+            if(Chainloader.PluginInfos.ContainsKey("blazeykat.etg.oddments"))
+                Oddments.Patch();
         }
     }
 }
