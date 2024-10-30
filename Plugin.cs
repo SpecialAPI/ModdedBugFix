@@ -22,22 +22,64 @@ namespace ModdedBugFix
         {
             HarmonyInstance = new Harmony(GUID);
 
-            HarmonyInstance.PatchAll();
+            try
+            {
+                HarmonyInstance.PatchAll();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed applying general patches: {ex}");
+            }
 
-            if (Chainloader.PluginInfos.ContainsKey("kp.etg.frostandgunfire"))
-                FrostAndGunfire.Patch();
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("kp.etg.frostandgunfire"))
+                    FrostAndGunfire.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching Frost and Gunfire: {ex}");
+            }
 
-            if (Chainloader.PluginInfos.ContainsKey("blazeykat.etg.prismatism"))
-                Prismatism.Patch();
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("blazeykat.etg.prismatism"))
+                    Prismatism.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching Prismatism: {ex}");
+            }
 
-            if (Chainloader.PluginInfos.ContainsKey("Retrash"))
-                RetrashItems.Patch();
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("Retrash"))
+                    RetrashItems.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching Retrash's Items: {ex}");
+            }
 
-            if(Chainloader.PluginInfos.ContainsKey("bleak.etg.abip"))
-                Bleaker.Patch();
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("bleak.etg.abip"))
+                    Bleaker.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching A Bleaker Item Pack: {ex}");
+            }
 
-            if(Chainloader.PluginInfos.ContainsKey("blazeykat.etg.oddments"))
-                Oddments.Patch();
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("blazeykat.etg.oddments"))
+                    Oddments.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching Oddments: {ex}");
+            }
         }
     }
 }

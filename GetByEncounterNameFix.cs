@@ -555,10 +555,13 @@ namespace ModdedBugFix
             { "katana bullets", PickupObjectDatabase.GetById(822) },
         };
 
-        [HarmonyPatch(typeof(GunExt), nameof(GunExt.SetName))]
+        [HarmonyPatch(typeof(GunExt), nameof(GunExt.SetName), [typeof(PickupObject), typeof(StringTableManager.GungeonSupportedLanguages), typeof(string)])]
         [HarmonyPostfix]
-        public static void RegisterEnglishName(PickupObject item, string text)
+        public static void RegisterEnglishName(PickupObject item, StringTableManager.GungeonSupportedLanguages lang, string text)
         {
+            if (lang != StringTableManager.GungeonSupportedLanguages.ENGLISH)
+                return;
+
             if (!EnglishItemNames.ContainsKey(text.ToLowerInvariant()) && !EnglishItemNames.ContainsValue(item))
                 EnglishItemNames[text.ToLowerInvariant()] = item;
         }
