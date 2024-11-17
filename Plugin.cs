@@ -14,7 +14,7 @@ namespace ModdedBugFix
     {
         public const string GUID = "spapi.etg.moddedbugfix";
         public const string NAME = "Modded Bugfix";
-        public const string VERSION = "1.1.0";
+        public const string VERSION = "1.3.0";
 
         public static Harmony HarmonyInstance;
 
