@@ -245,6 +245,7 @@
     <Compile Include="Mods\Prismatism.cs" />
     <Compile Include="Mods\RetrashItems.cs" />
     <Compile Include="GeneralPatches.cs" />
+    <Compile Include="OnDestroyGeneralFix.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

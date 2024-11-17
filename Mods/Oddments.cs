@@ -40,6 +40,26 @@ namespace ModdedBugFix.Mods
                 if (coolNewCustomGoopEffects != null)
                     Plugin.HarmonyInstance.Patch(coolNewCustomGoopEffects, ilmanipulator: new(gef_t));
             }
+
+            var itemsWithBrokenDisableEffect = new string[]
+            {
+                "HookWormItem",
+                "GungeonVeins",
+                "PulsingBulletsItem",
+                "RightfulCurtsy",
+                "SonarBullets",
+                "SpaceParasiteItem",
+                "FuckyBarrelItem",
+                "ToothyBullets",
+                "DoubleHealingItem",
+                "HellfireRounds",
+                "IceLeech",
+                "WhollyGhost",
+                "MinCasingIncreaserItem+MemberCard"
+            };
+
+            foreach (var i in itemsWithBrokenDisableEffect)
+                OnDestroyGeneralFix.FixOnDestroy($"Oddments.{i}");
         }
 
         public static void SpiderBootsFix_Update_Transpiler(ILContext ctx)

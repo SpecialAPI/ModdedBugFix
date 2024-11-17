@@ -20,6 +20,9 @@ namespace ModdedBugFix.Mods
         public static MethodInfo mpf_oph_t = AccessTools.Method(typeof(Prismatism), nameof(MaidenPlatingFix_OnPlayerHit_Transpiler));
         public static MethodInfo mpf_oph_rp = AccessTools.Method(typeof(Prismatism), nameof(MaidenPlatingFix_OnPlayerHit_ReplaceProjectile));
 
+        public static MethodInfo caf_od_t = AccessTools.Method(typeof(Prismatism), nameof(ColdAmmoFix_OnDestroy_Transpiler));
+        public static MethodInfo caf_od_u = AccessTools.Method(typeof(Prismatism), nameof(ColdAmmoFix_OnDestroy_Unsubscribe));
+
         public static void Patch()
         {
             var parrotsFeatherClass = AccessTools.TypeByName("katmod.ParrotsFeather");
@@ -48,6 +51,23 @@ namespace ModdedBugFix.Mods
                 if (onPlayerHit != null)
                     Plugin.HarmonyInstance.Patch(onPlayerHit, ilmanipulator: new(mpf_oph_t));
             }
+
+            var coldAmmoClass = AccessTools.TypeByName("katmod.ColdAmmo");
+            if(coldAmmoClass != null)
+            {
+                var onDestroy = AccessTools.Method(coldAmmoClass, "OnDestroy");
+
+                if (onDestroy != null)
+                    Plugin.HarmonyInstance.Patch(onDestroy, ilmanipulator: new(caf_od_t));
+            }
+
+            var itemsWithBrokenOnDestroy = new string[]
+            {
+                "TwoOfHearts"
+            };
+
+            foreach (var i in itemsWithBrokenOnDestroy)
+                OnDestroyGeneralFix.FixOnDestroy($"katmod.{i}");
         }
 
         public static bool ParrotsFeatherFix_CanBeUsed_Prefix(ref bool __result, PlayerController user)
@@ -86,6 +106,30 @@ namespace ModdedBugFix.Mods
         public static Projectile MaidenPlatingFix_OnPlayerHit_ReplaceProjectile(Projectile _, Projectile proj)
         {
             return proj;
+        }
+
+        public static void ColdAmmoFix_OnDestroy_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchCallOrCallvirt<PlayerController>($"add_{nameof(PlayerController.GunChanged)}")))
+                return;
+
+            var instr = crs.Prev;
+            var unsubLabel = crs.MarkLabel();
+
+            crs.Emit(OpCodes.Call, caf_od_u);
+
+            crs.Goto(instr, MoveType.Before);
+            crs.Emit(OpCodes.Br, unsubLabel);
+        }
+
+        public static void ColdAmmoFix_OnDestroy_Unsubscribe(PlayerController player, Action<Gun, Gun, bool> act)
+        {
+            if(player == null)
+                return;
+
+            player.GunChanged -= act;
         }
     }
 }

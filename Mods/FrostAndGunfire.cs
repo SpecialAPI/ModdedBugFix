@@ -56,6 +56,20 @@ namespace ModdedBugFix.Mods
                 if (canBeUsed != null)
                     Plugin.HarmonyInstance.Patch(canBeUsed, prefix: new(bkf_cbu_p));
             }
+
+            var itemsWithBrokenOnDestroy = new string[]
+            {
+                "SlimeyGuonStone",
+                "Pods",
+                "Greed",
+                "Sack",
+                "BulletSponge2",
+                "GeminiGuonStone",
+                "MirrorGuon"
+            };
+
+            foreach (var i in itemsWithBrokenOnDestroy)
+                OnDestroyGeneralFix.FixOnDestroy($"FrostAndGunfireItems.{i}");
         }
 
         public static bool BarterFix_CanBeUsed_Prefix(ref bool __result, PlayerController user)
