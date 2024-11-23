@@ -25,14 +25,18 @@ namespace ModdedBugFix
             if (type == null)
                 return;
 
-            var onDestroy = AccessTools.Method(type, nameof(PassiveItem.OnDestroy), []);
-            var disableEffect = AccessTools.Method(type, nameof(PassiveItem.DisableEffect), [typeof(PlayerController)]);
+            var onDestroy = AccessTools.Method(type, nameof(BraveBehaviour.OnDestroy), []);
 
             if (onDestroy != null && onDestroy.IsDeclaredMember())
                 Plugin.HarmonyInstance.Patch(onDestroy, ilmanipulator: new(odf_od_t));
 
-            if (disableEffect != null && disableEffect.IsDeclaredMember())
-                Plugin.HarmonyInstance.Patch(disableEffect, ilmanipulator: new(odf_od_t));
+            if (type.IsSubclassOf(typeof(PassiveItem)))
+            {
+                var disableEffect = AccessTools.Method(type, nameof(PassiveItem.DisableEffect), [typeof(PlayerController)]);
+
+                if (disableEffect != null && disableEffect.IsDeclaredMember())
+                    Plugin.HarmonyInstance.Patch(disableEffect, ilmanipulator: new(odf_od_t));
+            }
         }
 
         public static void OnDestroyFix_OnDestroy_Transpiler(ILContext ctx, MethodBase mthd)
@@ -45,7 +49,7 @@ namespace ModdedBugFix
             var crs = new ILCursor(ctx);
             var disableEffect = false;
 
-            if (!crs.TryFindNext(out var d, x => x.MatchCall(baseClass, nameof(PassiveItem.OnDestroy))) || d.Length <= 0)
+            if (!crs.TryFindNext(out var d, x => x.MatchCall(baseClass, nameof(BraveBehaviour.OnDestroy))) || d.Length <= 0)
             {
                 disableEffect = true;
 
@@ -98,20 +102,27 @@ namespace ModdedBugFix
             crs.Emit(OpCodes.Beq, retInstr);
         }
 
-        public static void OnDestroyFix_OnDestroy_PickedUpCheck_1(PassiveItem item, out int pu)
+        public static void OnDestroyFix_OnDestroy_PickedUpCheck_1(PickupObject item, out int pu)
         {
+            // Asumme item is picked up by default.
             pu = 1;
 
+            // If this *somehow* happens, you have bigger issues.
             if (item == null)
                 pu = 1;
 
-            else if (item.Owner == null)
+            // If the item is a PassiveItem and doesn't have an owner, it's not picked up.
+            else if (item is PassiveItem pa && pa.Owner == null)
+                pu = 0;
+
+            // If the item is a PlayerItem and doesn't have an owner, it's not picked up.
+            else if (item is PlayerItem aa && aa.LastOwner == null)
                 pu = 0;
         }
 
         public static int OnDestroyFix_OnDestroy_PickedUpCheck_2() => 0;
 
-        public static void OnDestroyFix_OnDestroy_Pop(PassiveItem _) { }
+        public static void OnDestroyFix_OnDestroy_Pop(PickupObject _) { }
 
         public static void OnDestroyFix_DisableEffect_Pop(PlayerController _) { }
     }

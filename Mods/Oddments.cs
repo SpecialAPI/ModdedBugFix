@@ -21,6 +21,9 @@ namespace ModdedBugFix.Mods
         public static MethodInfo gef_aan_2 = AccessTools.Method(typeof(Oddments), nameof(GoopEffectsFix_AIAnimatorNullcheck_2));
         public static MethodInfo gef_an = AccessTools.Method(typeof(Oddments), nameof(GoopEffectsFix_ActorNullcheck));
 
+        public static MethodInfo fcf_od_t = AccessTools.Method(typeof(Oddments), nameof(FortuneCookieFix_OnDestroy_Transpiler));
+        public static MethodInfo fcf_od_oaic = AccessTools.Method(typeof(Oddments), nameof(FortuneCookieFix_OnDestroy_OverrideActiveItemCheck));
+
         public static void Patch()
         {
             var spiderBootsClass = AccessTools.TypeByName("Oddments.SpiderBoots");
@@ -39,6 +42,15 @@ namespace ModdedBugFix.Mods
 
                 if (coolNewCustomGoopEffects != null)
                     Plugin.HarmonyInstance.Patch(coolNewCustomGoopEffects, ilmanipulator: new(gef_t));
+            }
+
+            var fortuneCookieItemClass = AccessTools.TypeByName("Oddments.FortuneCookieItem");
+            if(fortuneCookieItemClass != null)
+            {
+                var onDestroy = AccessTools.Method(fortuneCookieItemClass, "OnDestroy");
+
+                if (onDestroy != null)
+                    Plugin.HarmonyInstance.Patch(onDestroy, ilmanipulator: new(fcf_od_t));
             }
 
             var itemsWithBrokenDisableEffect = new string[]
@@ -131,6 +143,21 @@ namespace ModdedBugFix.Mods
         public static int GoopEffectsFix_AIAnimatorNullcheck_2()
         {
             return 1;
+        }
+
+        public static void FortuneCookieFix_OnDestroy_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchCallOrCallvirt<PlayerController>(nameof(PlayerController.HasActiveItem))))
+                return;
+
+            crs.Emit(OpCodes.Call, fcf_od_oaic);
+        }
+
+        public static bool FortuneCookieFix_OnDestroy_OverrideActiveItemCheck(bool _)
+        {
+            return true;
         }
     }
 }

@@ -1,12 +1,9 @@
-﻿using Dungeonator;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace ModdedBugFix.Mods
@@ -35,8 +32,24 @@ namespace ModdedBugFix.Mods
         public static MethodInfo lcf_od_puc = AccessTools.Method(typeof(Bleaker), nameof(LeadCrownFix_OnDestroy_PickedUpCheck));
         public static MethodInfo lcf_od_p = AccessTools.Method(typeof(Bleaker), nameof(LeadCrownFix_OnDestroy_Pop));
 
+        public static MethodInfo ssf_u_t = AccessTools.Method(typeof(Bleaker), nameof(ShadesShadesFix_Update_Transpiler));
+        public static MethodInfo ssf_u_puc = AccessTools.Method(typeof(Bleaker), nameof(ShadesShadesFix_Update_PickedUpCheck));
+
+        public static MethodInfo plf_a_t = AccessTools.Method(typeof(Bleaker), nameof(PouchLauncherFix_Add_Transpiler));
+        public static MethodInfo plf_a_scp = AccessTools.Method(typeof(Bleaker), nameof(PouchLauncherFix_Add_SetCoinProjectile));
+
+        public static MethodInfo psf_sdfps_t = AccessTools.Method(typeof(Bleaker), nameof(ProjectileSpriteFix_SetupDefinitionForProjectileSprite_Transpiler));
+        public static MethodInfo psf_sdfps_md = AccessTools.Method(typeof(Bleaker), nameof(ProjectileSpriteFix_SetupDefinitionForProjectileSprite_ModifyDefinition));
+
+        public static MethodInfo ssf_a_t = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Add_Transpiler));
+        public static MethodInfo ssf_a_si = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Add_SaveID));
+        public static MethodInfo ssf_b_t = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Bounce_Transpiler));
+        public static MethodInfo ssf_b_ssi = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Bounce_StarSplitterId));
+
         public static MethodInfo oooodgf_od_t = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler));
         public static MethodInfo oooodgf_od_p = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Pop));
+
+        public static int StarSplitterId;
 
         public static void Patch()
         {
@@ -80,11 +93,11 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(pickup, ilmanipulator: new(gcf_dmpm_t));
             }
 
-            var healthyBullets = AccessTools.TypeByName("BleakMod.HealthyBullets");
-            if(healthyBullets != null)
+            var healthyBulletsClass = AccessTools.TypeByName("BleakMod.HealthyBullets");
+            if(healthyBulletsClass != null)
             {
-                var drop = AccessTools.Method(healthyBullets, "Drop");
-                var onDestroy = AccessTools.Method(healthyBullets, "OnDestroy");
+                var drop = AccessTools.Method(healthyBulletsClass, "Drop");
+                var onDestroy = AccessTools.Method(healthyBulletsClass, "OnDestroy");
 
                 if (drop != null)
                     Plugin.HarmonyInstance.Patch(drop, prefix: new(hbf_u_p));
@@ -93,13 +106,59 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(onDestroy, prefix: new(hbf_u_p));
             }
 
-            var leadCrown = AccessTools.TypeByName("BleakMod.LeadCrown");
-            if(leadCrown != null)
+            var leadCrownClass = AccessTools.TypeByName("BleakMod.LeadCrown");
+            if(leadCrownClass != null)
             {
-                var onDestroy = AccessTools.Method(leadCrown, "OnDestroy");
+                var onDestroy = AccessTools.Method(leadCrownClass, "OnDestroy");
 
                 if (onDestroy != null)
                     Plugin.HarmonyInstance.Patch(onDestroy, ilmanipulator: new(lcf_od_t));
+            }
+
+            var shadesShadesClass = AccessTools.TypeByName("BleakMod.ShadesShades");
+            if(shadesShadesClass != null)
+            {
+                var update = AccessTools.Method(shadesShadesClass, "Update");
+
+                if (update != null)
+                    Plugin.HarmonyInstance.Patch(update, ilmanipulator: new(ssf_u_t));
+            }
+
+            var pouchLauncherClass = AccessTools.TypeByName("BleakMod.PouchLauncher");
+            if(pouchLauncherClass != null)
+            {
+                var add = AccessTools.Method(pouchLauncherClass, "Add");
+
+                if (add != null)
+                    Plugin.HarmonyInstance.Patch(add, ilmanipulator: new(plf_a_t));
+
+                var bleakerAssembly = pouchLauncherClass.Assembly;
+
+                if(bleakerAssembly != null)
+                {
+                    var gunToolsClass = bleakerAssembly.GetType("ItemAPI.GunTools");
+
+                    if (gunToolsClass != null)
+                    {
+                        var setupDefinitionForProjectileSprite = AccessTools.Method(gunToolsClass, "SetupDefinitionForProjectileSprite");
+
+                        if (setupDefinitionForProjectileSprite != null)
+                            Plugin.HarmonyInstance.Patch(setupDefinitionForProjectileSprite, ilmanipulator: new(psf_sdfps_t));
+                    }
+                }
+            }
+
+            var startStrikerClass = AccessTools.TypeByName("BleakMod.StartStriker");
+            if(startStrikerClass != null)
+            {
+                var add = AccessTools.Method(startStrikerClass, "Add");
+                var bounce = AccessTools.Method(startStrikerClass, "bounce");
+
+                if (add != null)
+                    Plugin.HarmonyInstance.Patch(add, ilmanipulator: new(ssf_a_t));
+
+                if (bounce != null)
+                    Plugin.HarmonyInstance.Patch(bounce, ilmanipulator: new(ssf_b_t));
             }
 
             var itemsWithBrokenOnDestroy_OutOfOrder = new string[]
@@ -141,6 +200,18 @@ namespace ModdedBugFix.Mods
 
                 Plugin.HarmonyInstance.Patch(onDestroy, ilmanipulator: new(oooodgf_od_t));
             }
+
+            var activesWithBrokenOnDestroy = new string[]
+            {
+                "SuspiciousLookingBell",
+                "ShadesShades",
+                "AmmocondasNest",
+                "Rewind",
+                "Overpill"
+            };
+
+            foreach (var i in activesWithBrokenOnDestroy)
+                OnDestroyGeneralFix.FixOnDestroy($"BleakMod.{i}");
         }
 
         public static bool CarrotFix_Update_Prefix(PassiveItem __instance)
@@ -343,6 +414,108 @@ namespace ModdedBugFix.Mods
         }
 
         public static void LeadCrownFix_OnDestroy_Pop(PassiveItem _) { }
+
+        public static void ShadesShadesFix_Update_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchCall<PlayerItem>(nameof(PlayerItem.Update))))
+                return;
+
+            if (!crs.TryFindNext(out var r, x => x.MatchRet()) || r.Length <= 0)
+                return;
+
+            var retInstr = r[r.Length - 1].Next;
+
+            crs.Emit(OpCodes.Ldarg_0);
+            crs.Emit(OpCodes.Call, ssf_u_puc);
+            crs.Emit(OpCodes.Brfalse, retInstr);
+        }
+
+        public static bool ShadesShadesFix_Update_PickedUpCheck(PlayerItem item)
+        {
+            if (item == null)
+                return true;
+
+            if (item.LastOwner == null || !item.PickedUp)
+                return false;
+
+            return true;
+        }
+
+        public static void PouchLauncherFix_Add_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchStloc(2)))
+                return;
+
+            crs.Emit(OpCodes.Ldloc_2);
+            crs.Emit(OpCodes.Call, plf_a_scp);
+        }
+
+        public static void PouchLauncherFix_Add_SetCoinProjectile(Projectile proj)
+        {
+            var pouchLauncherClass = AccessTools.TypeByName("BleakMod.PouchLauncher");
+            if (pouchLauncherClass == null)
+                return;
+
+            var coinProjectile = AccessTools.Field(pouchLauncherClass, "coinProjectile");
+            if (coinProjectile == null || !coinProjectile.IsStatic)
+                return;
+
+            coinProjectile.SetValue(null, proj);
+        }
+
+        public static void ProjectileSpriteFix_SetupDefinitionForProjectileSprite_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchStloc(8)))
+                return;
+
+            crs.Emit(OpCodes.Ldloc, 8);
+            crs.Emit(OpCodes.Ldarg_1);
+            crs.Emit(OpCodes.Call, psf_sdfps_md);
+        }
+
+        public static void ProjectileSpriteFix_SetupDefinitionForProjectileSprite_ModifyDefinition(tk2dSpriteDefinition def, int id)
+        {
+            def.materialInst.mainTexture = ETGMod.Databases.Items.ProjectileCollection.inst.spriteDefinitions[id].materialInst.mainTexture;
+            def.uvs = [.. ETGMod.Databases.Items.ProjectileCollection.inst.spriteDefinitions[id].uvs];
+        }
+
+        public static void StarSplitterFix_Add_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchCallOrCallvirt<ItemDB>(nameof(ItemDB.Add))))
+                return;
+
+            crs.Emit(OpCodes.Call, ssf_a_si);
+        }
+
+        public static int StarSplitterFix_Add_SaveID(int id)
+        {
+            StarSplitterId = id;
+
+            return id;
+        }
+
+        public static void StarSplitterFix_Bounce_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            foreach(var m in crs.MatchAfter(x => x.MatchLdcI4(881)))
+            {
+                crs.Emit(OpCodes.Call, ssf_b_ssi);
+            }
+        }
+
+        public static int StarSplitterFix_Bounce_StarSplitterId(int _)
+        {
+            return StarSplitterId;
+        }
 
         public static void OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler(ILContext ctx, MethodBase mthd)
         {
