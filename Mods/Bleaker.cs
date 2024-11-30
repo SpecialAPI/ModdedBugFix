@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -45,6 +46,10 @@ namespace ModdedBugFix.Mods
         public static MethodInfo ssf_a_si = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Add_SaveID));
         public static MethodInfo ssf_b_t = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Bounce_Transpiler));
         public static MethodInfo ssf_b_ssi = AccessTools.Method(typeof(Bleaker), nameof(StarSplitterFix_Bounce_StarSplitterId));
+
+        public static MethodInfo bgsf_aeb_pnt_t = AccessTools.Method(typeof(Bleaker), nameof(BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_Transpiler));
+        public static MethodInfo bgsf_aeb_pnt_b = AccessTools.Method(typeof(Bleaker), nameof(BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_Beq));
+        public static MethodInfo bgsf_aeb_pnt_aa = AccessTools.Method(typeof(Bleaker), nameof(BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_AIAnimator));
 
         public static MethodInfo oooodgf_od_t = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler));
         public static MethodInfo oooodgf_od_p = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Pop));
@@ -159,6 +164,15 @@ namespace ModdedBugFix.Mods
 
                 if (bounce != null)
                     Plugin.HarmonyInstance.Patch(bounce, ilmanipulator: new(ssf_b_t));
+            }
+
+            var babyGoodShellicopter_ApproachEnemiesBehaviorClass = AccessTools.TypeByName("BleakMod.BabyGoodShellicopter+ApproachEnemiesBehavior");
+            if(babyGoodShellicopter_ApproachEnemiesBehaviorClass != null)
+            {
+                var pickNewTarget = AccessTools.Method(babyGoodShellicopter_ApproachEnemiesBehaviorClass, "PickNewTarget");
+
+                if (pickNewTarget != null)
+                    Plugin.HarmonyInstance.Patch(pickNewTarget, ilmanipulator: new(bgsf_aeb_pnt_t));
             }
 
             var itemsWithBrokenOnDestroy_OutOfOrder = new string[]
@@ -515,6 +529,50 @@ namespace ModdedBugFix.Mods
         public static int StarSplitterFix_Bounce_StarSplitterId(int _)
         {
             return StarSplitterId;
+        }
+
+        public static void BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpBeforeNext(x => x.MatchLdsfld("BleakMod.BabyGoodShellicopter", "ChopperPrefab")))
+                return;
+
+            if (!crs.TryFindNext(out var l, x => x.MatchStloc(3)) || l.Length <= 0)
+                return;
+
+            var ldsfldInstr = crs.Next;
+            var afterStlocInstr = l[0].Next.Next;
+
+            crs.Emit(OpCodes.Call, bgsf_aeb_pnt_b);
+            crs.Emit(OpCodes.Call, bgsf_aeb_pnt_b);
+            crs.Emit(OpCodes.Beq, afterStlocInstr);
+
+            foreach(var m in crs.MatchBefore(x => x.MatchCallOrCallvirt<BraveBehaviour>($"get_{nameof(BraveBehaviour.aiAnimator)}")))
+            {
+                var aiAnimatorInstr = crs.Next;
+                var afterAiAnimatorLabel = crs.DefineLabel();
+
+                crs.Emit(OpCodes.Call, bgsf_aeb_pnt_b);
+                crs.Emit(OpCodes.Call, bgsf_aeb_pnt_b);
+                crs.Emit(OpCodes.Beq, afterAiAnimatorLabel);
+
+                crs.Goto(aiAnimatorInstr, MoveType.After);
+                crs.MarkLabel(afterAiAnimatorLabel);
+
+                crs.Emit(OpCodes.Ldarg_0);
+                crs.Emit(OpCodes.Call, bgsf_aeb_pnt_aa);
+            }
+        }
+
+        public static int BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_Beq()
+        {
+            return 0;
+        }
+
+        public static AIAnimator BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_AIAnimator(CompanionController _, BehaviorBase aa)
+        {
+            return aa.m_aiAnimator;
         }
 
         public static void OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler(ILContext ctx, MethodBase mthd)
