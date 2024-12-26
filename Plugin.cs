@@ -80,6 +80,16 @@ namespace ModdedBugFix
             {
                 Logger.LogError($"Failed patching Oddments: {ex}");
             }
+
+            try
+            {
+                if (Chainloader.PluginInfos.ContainsKey("Dulsam.etg.Dulsamthings"))
+                    ReferenceCollection.Patch();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed patching The Reference Collection: {ex}");
+            }
         }
     }
 }

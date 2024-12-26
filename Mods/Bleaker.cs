@@ -354,9 +354,7 @@ namespace ModdedBugFix.Mods
             if (__instance == null || __instance.Owner == null)
                 return;
 
-            var type = __instance.GetType();
             var enteredCombatDelegate = (Action)Delegate.CreateDelegate(typeof(Action), __instance, "OnEnteredCombat");
-
             __instance.Owner.OnEnteredCombat -= enteredCombatDelegate;
         }
 
