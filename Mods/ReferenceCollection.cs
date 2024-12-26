@@ -14,7 +14,8 @@ namespace ModdedBugFix.Mods
     public static class ReferenceCollection
     {
         public static MethodInfo sf_t_t = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_Transforming_Transpiler));
-        public static MethodInfo sf_t_n = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_Transforming_Nullcheck));
+        public static MethodInfo sf_t_n_1 = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_Transforming_Nullcheck_1));
+        public static MethodInfo sf_t_n_2 = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_Transforming_Nullcheck_2));
         public static MethodInfo sf_t_ddp = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_Transforming_DontDestroyPrefab));
 
         public static MethodInfo sf_uod_op_p = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_UnsubscribeOnDestroy_OnPickup_Postfix));
@@ -27,7 +28,9 @@ namespace ModdedBugFix.Mods
                 "SnowfoxL",
                 "SnowfoxXL",
                 "SnowfoxXXL",
-                "SnowfoxXXXL"
+                "SnowfoxXXXL",
+
+                "Snowfoxrosegold"
             };
 
             foreach(var f in snowfoxes)
@@ -62,8 +65,9 @@ namespace ModdedBugFix.Mods
             var retInstr = r[r.Length - 1].Next;
 
             crs.Emit(OpCodes.Ldarg_0);
-            crs.Emit(OpCodes.Call, sf_t_n);
-            crs.Emit(OpCodes.Brtrue, retInstr);
+            crs.Emit(OpCodes.Call, sf_t_n_1);
+            crs.Emit(OpCodes.Call, sf_t_n_2);
+            crs.Emit(OpCodes.Beq, retInstr);
 
             if (!crs.JumpBeforeNext(x => x.MatchCallOrCallvirt<GunInventory>(nameof(GunInventory.DestroyGun))))
                 return;
@@ -72,15 +76,20 @@ namespace ModdedBugFix.Mods
             crs.Emit(OpCodes.Call, sf_t_ddp);
         }
 
-        public static bool SnowfoxFix_Transforming_Nullcheck(MonoBehaviour behav)
+        public static int SnowfoxFix_Transforming_Nullcheck_1(MonoBehaviour behav)
         {
             if (behav == null)
-                return true;
+                return 0;
 
             if (behav.GetComponent<Gun>() == null)
-                return true;
+                return 0;
 
-            return false;
+            return 1;
+        }
+
+        public static int SnowfoxFix_Transforming_Nullcheck_2()
+        {
+            return 0;
         }
 
         public static Gun SnowfoxFix_Transforming_DontDestroyPrefab(Gun _, MonoBehaviour behav)
