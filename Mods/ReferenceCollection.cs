@@ -53,6 +53,16 @@ namespace ModdedBugFix.Mods
                 if (onPostDrop != null)
                     Plugin.HarmonyInstance.Patch(onPostDrop, postfix: new(sf_uod_opd_p));
             }
+
+            var itemsWithBrokenDisableEffect = new string[]
+            {
+                "ExpensiveBullets",
+                "CheesyBullets",
+                "DeterminationBullets"
+            };
+
+            foreach(var i in itemsWithBrokenDisableEffect)
+                OnDestroyGeneralFix.FixOnDestroy($"dulsamthings.{i}");
         }
 
         public static void SnowfoxFix_Transforming_Transpiler(ILContext ctx, MethodBase mthd)
