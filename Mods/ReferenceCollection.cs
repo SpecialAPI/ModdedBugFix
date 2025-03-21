@@ -21,6 +21,9 @@ namespace ModdedBugFix.Mods
         public static MethodInfo sf_uod_op_p = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_UnsubscribeOnDestroy_OnPickup_Postfix));
         public static MethodInfo sf_uod_opd_p = AccessTools.Method(typeof(ReferenceCollection), nameof(SnowfoxFix_UnsubscribeOnDestroy_OnPostDrop_Postfix));
 
+        public static MethodInfo ebf_i_t = AccessTools.Method(typeof(ReferenceCollection), nameof(ExpensiveBulletsFix_Init_Transpiler));
+        public static MethodInfo ebf_i_rdm = AccessTools.Method(typeof(ReferenceCollection), nameof(ExpensiveBulletsFix_Init_ReplaceDamageModifier));
+
         public static void Patch()
         {
             var snowfoxes = new string[]
@@ -54,6 +57,15 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(onPostDrop, postfix: new(sf_uod_opd_p));
             }
 
+            var expensiveBulletsClass = AccessTools.TypeByName("dulsamthings.ExpensiveBullets");
+            if(expensiveBulletsClass != null)
+            {
+                var init = AccessTools.Method(expensiveBulletsClass, "Init");
+
+                if (init != null)
+                    Plugin.HarmonyInstance.Patch(init, ilmanipulator: new(ebf_i_t));
+            }
+
             var itemsWithBrokenDisableEffect = new string[]
             {
                 "ExpensiveBullets",
@@ -63,9 +75,27 @@ namespace ModdedBugFix.Mods
 
             foreach(var i in itemsWithBrokenDisableEffect)
                 OnDestroyGeneralFix.FixOnDestroy($"dulsamthings.{i}");
+
+            // TODO:
+            //  Fix the snowfoxes having fucked up modules
         }
 
-        public static void SnowfoxFix_Transforming_Transpiler(ILContext ctx, MethodBase mthd)
+        public static void ExpensiveBulletsFix_Init_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchLdcR4(0.5f)))
+                return;
+
+            crs.Emit(OpCodes.Call, ebf_i_rdm);
+        }
+
+        public static float ExpensiveBulletsFix_Init_ReplaceDamageModifier(float _)
+        {
+            return 0.05f;
+        }
+
+        public static void SnowfoxFix_Transforming_Transpiler(ILContext ctx)
         {
             var crs = new ILCursor(ctx);
 
