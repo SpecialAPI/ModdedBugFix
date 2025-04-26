@@ -77,7 +77,7 @@ namespace ModdedBugFix.Mods
                 OnDestroyGeneralFix.FixOnDestroy($"dulsamthings.{i}");
 
             // TODO:
-            //  Fix the snowfoxes having fucked up modules
+            //  Fix the snowfoxes having fucked up modules (maybe next update)
         }
 
         public static void ExpensiveBulletsFix_Init_Transpiler(ILContext ctx)

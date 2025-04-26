@@ -51,6 +51,10 @@ namespace ModdedBugFix.Mods
         public static MethodInfo bgsf_aeb_pnt_b = AccessTools.Method(typeof(Bleaker), nameof(BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_Beq));
         public static MethodInfo bgsf_aeb_pnt_aa = AccessTools.Method(typeof(Bleaker), nameof(BabyGoodShellicopterFix_ApproachEnemiesBehavior_PickNewTarget_AIAnimator));
 
+        public static MethodInfo gpf_u_p = AccessTools.Method(typeof(Bleaker), nameof(GundromedaPainFix_Update_Prefix));
+
+        public static MethodInfo ggf_ohe_p = AccessTools.Method(typeof(Bleaker), nameof(GatlingGulletsFix_OnHitEnemy_Prefix));
+
         public static MethodInfo oooodgf_od_t = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler));
         public static MethodInfo oooodgf_od_p = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Pop));
 
@@ -175,6 +179,24 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(pickNewTarget, ilmanipulator: new(bgsf_aeb_pnt_t));
             }
 
+            var gundromedaPainClass = AccessTools.TypeByName("BleakMod.GundromedaPain");
+            if(gundromedaPainClass != null)
+            {
+                var update = AccessTools.Method(gundromedaPainClass, "Update");
+
+                if (update != null)
+                    Plugin.HarmonyInstance.Patch(update, prefix: new(gpf_u_p));
+            }
+
+            var gatlingGulletsClass = AccessTools.TypeByName("BleakMod.GatlingGullets");
+            if(gatlingGulletsClass != null)
+            {
+                var onHitEnemy = AccessTools.Method(gatlingGulletsClass, "OnHitEnemy");
+
+                if (onHitEnemy != null)
+                    Plugin.HarmonyInstance.Patch(onHitEnemy, prefix: new(ggf_ohe_p));
+            }
+
             var itemsWithBrokenOnDestroy_OutOfOrder = new string[]
             {
                 "ChamberOfFrogs",
@@ -226,6 +248,32 @@ namespace ModdedBugFix.Mods
 
             foreach (var i in activesWithBrokenOnDestroy)
                 OnDestroyGeneralFix.FixOnDestroy($"BleakMod.{i}");
+        }
+
+        public static bool GatlingGulletsFix_OnHitEnemy_Prefix(SpeculativeRigidbody enemy)
+        {
+            if(enemy == null || enemy.aiActor == null)
+                return false;
+
+            return true;
+        }
+
+        public static bool GundromedaPainFix_Update_Prefix(PassiveItem __instance)
+        {
+            if (__instance == null)
+                return false;
+
+            var owner = __instance.Owner;
+
+            if (owner == null)
+                return false;
+
+            var room = owner.CurrentRoom;
+
+            if(room == null)
+                return false;
+
+            return room.GetActiveEnemies(Dungeonator.RoomHandler.ActiveEnemyType.All) != null;
         }
 
         public static bool CarrotFix_Update_Prefix(PassiveItem __instance)
