@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
+using BepInEx.Logging;
 using HarmonyLib;
 using ModdedBugFix.Mods;
 using System;
@@ -17,10 +18,12 @@ namespace ModdedBugFix
         public const string VERSION = "1.5.0";
 
         public static Harmony HarmonyInstance;
+        public static ManualLogSource ModdedBugFixLogger;
 
         public void Start()
         {
             HarmonyInstance = new Harmony(GUID);
+            ModdedBugFixLogger = Logger;
 
             try
             {
@@ -33,8 +36,7 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("kp.etg.frostandgunfire"))
-                    FrostAndGunfire.Patch();
+                FrostAndGunfire.Patch();
             }
             catch (Exception ex)
             {
@@ -43,8 +45,7 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("blazeykat.etg.prismatism"))
-                    Prismatism.Patch();
+                Prismatism.Patch();
             }
             catch (Exception ex)
             {
@@ -53,8 +54,7 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("Retrash"))
-                    RetrashItems.Patch();
+                RetrashItems.Patch();
             }
             catch (Exception ex)
             {
@@ -63,8 +63,7 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("bleak.etg.abip"))
-                    Bleaker.Patch();
+                Bleaker.Patch();
             }
             catch (Exception ex)
             {
@@ -73,8 +72,7 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("blazeykat.etg.oddments"))
-                    Oddments.Patch();
+                Oddments.Patch();
             }
             catch (Exception ex)
             {
@@ -83,13 +81,32 @@ namespace ModdedBugFix
 
             try
             {
-                if (Chainloader.PluginInfos.ContainsKey("Dulsam.etg.Dulsamthings"))
-                    ReferenceCollection.Patch();
+                ReferenceCollection.Patch();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed patching The Reference Collection: {ex}");
             }
+        }
+
+        public static bool CheckModLoadedAndVersion(string modGuid, Version supportedVersion)
+        {
+            if (!Chainloader.PluginInfos.TryGetValue(modGuid, out var info))
+                return false;
+
+            if(info?.Metadata is not BepInPlugin metadata || metadata.Version is not Version version)
+                return false;
+
+            if(version > supportedVersion)
+                return false;
+
+            if(version < supportedVersion)
+            {
+                ModdedBugFixLogger?.LogError($"You are using an older version ({version}) of {metadata.Name} than Modded Bug Fix supports ({supportedVersion}).");
+                return false;
+            }
+
+            return true;
         }
     }
 }

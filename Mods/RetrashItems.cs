@@ -18,8 +18,14 @@ namespace ModdedBugFix.Mods
         public static MethodInfo cbf_sh_rp1 = AccessTools.Method(typeof(RetrashItems), nameof(CrystalBallFix_SoulHook_ReplaceP1));
         public static MethodInfo cbf_sh_rp2 = AccessTools.Method(typeof(RetrashItems), nameof(CrystalBallFix_SoulHook_ReplaceP2));
 
+        public const string Guid = "Retrash";
+        public static readonly Version SupportedVersion = new(5, 0, 2);
+
         public static void Patch()
         {
+            if (!Plugin.CheckModLoadedAndVersion(Guid, SupportedVersion))
+                return;
+
             var crystalBallClass = AccessTools.TypeByName("Blunderbeast.CrystalBall");
             if(crystalBallClass != null)
             {

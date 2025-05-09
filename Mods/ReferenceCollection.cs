@@ -24,8 +24,14 @@ namespace ModdedBugFix.Mods
         public static MethodInfo ebf_i_t = AccessTools.Method(typeof(ReferenceCollection), nameof(ExpensiveBulletsFix_Init_Transpiler));
         public static MethodInfo ebf_i_rdm = AccessTools.Method(typeof(ReferenceCollection), nameof(ExpensiveBulletsFix_Init_ReplaceDamageModifier));
 
+        public const string Guid = "Dulsam.etg.Dulsamthings";
+        public static readonly Version SupportedVersion = new(1, 4, 2);
+
         public static void Patch()
         {
+            if(!Plugin.CheckModLoadedAndVersion(Guid, SupportedVersion))
+                return;
+
             var snowfoxes = new string[]
             {
                 "SnowfoxL",

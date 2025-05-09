@@ -24,8 +24,14 @@ namespace ModdedBugFix.Mods
         public static MethodInfo fcf_od_t = AccessTools.Method(typeof(Oddments), nameof(FortuneCookieFix_OnDestroy_Transpiler));
         public static MethodInfo fcf_od_oaic = AccessTools.Method(typeof(Oddments), nameof(FortuneCookieFix_OnDestroy_OverrideActiveItemCheck));
 
+        public const string Guid = "blazeykat.etg.oddments";
+        public static readonly Version SupportedVersion = new(0, 0, 9);
+
         public static void Patch()
         {
+            if (!Plugin.CheckModLoadedAndVersion(Guid, SupportedVersion))
+                return;
+
             var spiderBootsClass = AccessTools.TypeByName("Oddments.SpiderBoots");
             if(spiderBootsClass != null)
             {

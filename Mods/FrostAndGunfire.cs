@@ -22,8 +22,14 @@ namespace ModdedBugFix.Mods
 
         public static MethodInfo bkf_cbu_p = AccessTools.Method(typeof(FrostAndGunfire), nameof(BloodiedKeyFix_CanBeUsed_Prefix));
 
+        public const string Guid = "kp.etg.frostandgunfire";
+        public static readonly Version SupportedVersion = new(1, 0, 0);
+
         public static void Patch()
         {
+            if (!Plugin.CheckModLoadedAndVersion(Guid, SupportedVersion))
+                return;
+
             var barterClass = AccessTools.TypeByName("FrostAndGunfireItems.Barter");
             if (barterClass != null)
             {

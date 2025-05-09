@@ -23,8 +23,14 @@ namespace ModdedBugFix.Mods
         public static MethodInfo caf_od_t = AccessTools.Method(typeof(Prismatism), nameof(ColdAmmoFix_OnDestroy_Transpiler));
         public static MethodInfo caf_od_u = AccessTools.Method(typeof(Prismatism), nameof(ColdAmmoFix_OnDestroy_Unsubscribe));
 
+        public const string Guid = "blazeykat.etg.prismatism";
+        public static readonly Version SupportedVersion = new(2, 7, 6);
+
         public static void Patch()
         {
+            if (!Plugin.CheckModLoadedAndVersion(Guid, SupportedVersion))
+                return;
+
             var parrotsFeatherClass = AccessTools.TypeByName("katmod.ParrotsFeather");
             if(parrotsFeatherClass != null)
             {
