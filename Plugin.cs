@@ -92,20 +92,27 @@ namespace ModdedBugFix
         public static bool CheckModLoadedAndVersion(string modGuid, Version supportedVersion)
         {
             if (!Chainloader.PluginInfos.TryGetValue(modGuid, out var info))
-                return false;
-
-            if(info?.Metadata is not BepInPlugin metadata || metadata.Version is not Version version)
-                return false;
-
-            if(version > supportedVersion)
-                return false;
-
-            if(version < supportedVersion)
             {
-                ModdedBugFixLogger?.LogError($"You are using an older version ({version}) of {metadata.Name} than Modded Bug Fix supports ({supportedVersion}).");
+                ModdedBugFixLogger?.LogDebug($"Mod {modGuid} isn't loaded.");
                 return false;
             }
 
+            if(info?.Metadata is not BepInPlugin metadata || metadata.Version is not Version version)
+                return false; // This shouldn't ever happen
+
+            if (version > supportedVersion)
+            {
+                ModdedBugFixLogger?.LogDebug($"Mod {metadata.Name} ({modGuid}) is older ({version}) than the supported version ({supportedVersion}).");
+                return false;
+            }
+
+            if(version < supportedVersion)
+            {
+                ModdedBugFixLogger?.LogError($"You are using an older version ({version}) of {metadata.Name} ({modGuid}) than Modded Bug Fix supports ({supportedVersion}).");
+                return false;
+            }
+
+            ModdedBugFixLogger?.LogDebug($"Version check for mod {metadata.Name} ({modGuid}) successful");
             return true;
         }
     }

@@ -41,7 +41,7 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(update, ilmanipulator: new(sbf_u_t));
             }
 
-            var customGoopEffectDoerClass = AccessTools.TypeByName("Oddments.CustomGoopEffectDoer");
+            var customGoopEffectDoerClass = AccessTools.TypeByName("Oddments.CloneGoopEffectDoer");
             if(customGoopEffectDoerClass != null)
             {
                 var coolNewCustomGoopEffects = AccessTools.Method(customGoopEffectDoerClass, "CoolNewCustomGoopEffects");
@@ -68,9 +68,9 @@ namespace ModdedBugFix.Mods
                 "SonarBullets",
                 "SpaceParasiteItem",
                 "FuckyBarrelItem",
-                "ToothyBullets",
+                "OddProjectileModifierItem",
                 "DoubleHealingItem",
-                "HellfireRounds",
+                "HellfireRoundsItem",
                 "IceLeech",
                 "WhollyGhost",
                 "MinCasingIncreaserItem+MemberCard"
