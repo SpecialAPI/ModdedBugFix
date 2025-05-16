@@ -65,12 +65,10 @@ namespace ModdedBugFix.Mods
                 "GungeonVeins",
                 "PulsingBulletsItem",
                 "RightfulCurtsy",
-                "SonarBullets",
                 "SpaceParasiteItem",
                 "FuckyBarrelItem",
                 "OddProjectileModifierItem",
                 "DoubleHealingItem",
-                "HellfireRoundsItem",
                 "IceLeech",
                 "WhollyGhost",
                 "MinCasingIncreaserItem+MemberCard"
