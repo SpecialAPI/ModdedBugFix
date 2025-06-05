@@ -18,6 +18,7 @@ namespace ModdedBugFix.Mods
         public static MethodInfo coff_dtf_t = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueFlick_Transpiler));
         public static MethodInfo coff_dtf_cn = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueFlick_CheckNearest));
         public static MethodInfo coff_dtf_n = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueflick_Null));
+        public static MethodInfo coff_dtf_p = AccessTools.Method(typeof(Bleaker), nameof(ChamberOfFrogsFix_DoTongueFlick_Prefix));
 
         public static MethodInfo whf_u_t = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_Update_Transpiler));
         public static MethodInfo whf_u_n_1 = AccessTools.Method(typeof(Bleaker), nameof(WinchestersHatFix_Update_Nullcheck_1));
@@ -59,6 +60,7 @@ namespace ModdedBugFix.Mods
         public static MethodInfo oooodgf_od_p = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Pop));
 
         public static int StarSplitterId;
+        public static FieldInfo FrogTongueBehaviorProjectileField;
 
         public const string Guid = "bleak.etg.abip";
         public static readonly Version SupportedVersion = new(1, 0, 5);
@@ -83,7 +85,7 @@ namespace ModdedBugFix.Mods
                 var doTongueFlick = AccessTools.Method(frogTongueBehaviorClass, "DoTongueFlick");
 
                 if (doTongueFlick != null)
-                    Plugin.HarmonyInstance.Patch(doTongueFlick, ilmanipulator: new(coff_dtf_t));
+                    Plugin.HarmonyInstance.Patch(doTongueFlick, ilmanipulator: new(coff_dtf_t), prefix: new(coff_dtf_p));
             }
 
             var winchestersHatClass = AccessTools.TypeByName("BleakMod.WinchestersHat");
@@ -340,6 +342,24 @@ namespace ModdedBugFix.Mods
         public static BeamController ChamberOfFrogsFix_DoTongueflick_Null()
         {
             return null;
+        }
+
+        public static bool ChamberOfFrogsFix_DoTongueFlick_Prefix(object __instance)
+        {
+            FrogTongueBehaviorProjectileField ??= AccessTools.Field(__instance.GetType(), "m_projectile");
+
+            if (FrogTongueBehaviorProjectileField == null)
+                return true; // This should never happen
+
+            var projObj = FrogTongueBehaviorProjectileField.GetValue(__instance);
+
+            if (projObj is not Projectile proj || proj == null)
+                return false;
+
+            if(proj.Owner == null || proj.Owner.GetAbsoluteParentRoom() == null)
+                return false;
+
+            return true;
         }
 
         public static void WinchestersHatFix_Update_Transpiler(ILContext ctx)
