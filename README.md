@@ -21,7 +21,7 @@ Currently this mod fixes bugs in the following mods:
    * Fixes the mod not loading for languages other than English.
  * A Bleaker Item Pack
    * Fixes exceptions caused by the Carrot when not picked up.
-   * Fixes exceptions caused by Chamber of Frog bullefonts when no enemies are nearby.
+   * Fixes exceptions caused by Chamber of Frog bullets when no enemies are nearby, when the projectiles don't have an owner or when the owner isn't in a room.
    * Fixes exceptions caused by Winchester's Hat when not picked up.
    * Fixes the mod not loading for languages other than English.
    * Fixes the Golden Circlet messing with pickup drop chances.
@@ -33,6 +33,7 @@ Currently this mod fixes bugs in the following mods:
    * Fixes Baby Good Shellicopter causing exceptions and slowdowns after loading a new floor.
    * Fixes exceptions caused by Gundromeda Pain when in a room without enemies.
    * Fixes Gatling Gullets breaking when hitting certain enemies.
+   * Fixes exceptions caused by Spill-O' Jar when not picked up.
  * Oddments
    * Fixes exceptions caused by the Spider Boots during floor generation.
    * Fixes exceptions caused by enemies with no animator standing in goop when Oddments is installed.
@@ -43,4 +44,6 @@ Currently this mod fixes bugs in the following mods:
    * Fixes Expensive Bullets giving a 50% damage up on pickup instead of a 5% damage up.
    * Fixes the Snowfox weapons breaking after transforming.
 
-Also fixes the annoying `AudioAnimatorListener.Start()` error on startup that just won't leave modding alone.
+General fixes:
+ * Fixes the `AudioAnimatorListener.Start()` error on startup.
+ * Fixes `AIAnimator.OnDestroy()` sometimes causing exceptions.
