@@ -56,6 +56,10 @@ namespace ModdedBugFix.Mods
 
         public static MethodInfo ggf_ohe_p = AccessTools.Method(typeof(Bleaker), nameof(GatlingGulletsFix_OnHitEnemy_Prefix));
 
+        public static MethodInfo sojf_u_t = AccessTools.Method(typeof(Bleaker), nameof(SpillOJarFix_Update_Transpiler));
+        public static MethodInfo sojf_u_n_1 = AccessTools.Method(typeof(Bleaker), nameof(SpillOJarFix_Update_Nullcheck_1));
+        public static MethodInfo sojf_u_n_2 = AccessTools.Method(typeof(Bleaker), nameof(SpillOJarFix_Update_Nullcheck_2));
+
         public static MethodInfo oooodgf_od_t = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Transpiler));
         public static MethodInfo oooodgf_od_p = AccessTools.Method(typeof(Bleaker), nameof(OutOfOrderOnDestroyGeneralFix_OnDestroy_Pop));
 
@@ -205,6 +209,15 @@ namespace ModdedBugFix.Mods
                     Plugin.HarmonyInstance.Patch(onHitEnemy, prefix: new(ggf_ohe_p));
             }
 
+            var spillOJarClass = AccessTools.TypeByName("BleakMod.SpillOJar");
+            if(spillOJarClass != null)
+            {
+                var update = AccessTools.Method(spillOJarClass, "Update");
+
+                if (update != null)
+                    Plugin.HarmonyInstance.Patch(update, ilmanipulator: new(sojf_u_t));
+            }
+
             var itemsWithBrokenOnDestroy_OutOfOrder = new string[]
             {
                 "ChamberOfFrogs",
@@ -256,6 +269,40 @@ namespace ModdedBugFix.Mods
 
             foreach (var i in activesWithBrokenOnDestroy)
                 OnDestroyGeneralFix.FixOnDestroy($"BleakMod.{i}");
+        }
+
+        public static void SpillOJarFix_Update_Transpiler(ILContext ctx)
+        {
+            var crs = new ILCursor(ctx);
+
+            if (!crs.JumpToNext(x => x.MatchCall<PlayerItem>(nameof(PlayerItem.Update))))
+                return;
+
+            if(!crs.TryFindNext(out var r, x => x.MatchRet()) || r.Length <= 0)
+                return;
+
+            var retInstr = r[0].Next;
+
+            crs.Emit(OpCodes.Ldarg_0);
+            crs.Emit(OpCodes.Call, sojf_u_n_1);
+            crs.Emit(OpCodes.Call, sojf_u_n_2);
+            crs.Emit(OpCodes.Blt, retInstr);
+        }
+
+        public static int SpillOJarFix_Update_Nullcheck_1(PlayerItem self)
+        {
+            if (self == null)
+                return 0;
+
+            if(!self.PickedUp || self.LastOwner == null)
+                return 0;
+
+            return 1;
+        }
+
+        public static int SpillOJarFix_Update_Nullcheck_2()
+        {
+            return 1;
         }
 
         public static bool GatlingGulletsFix_OnHitEnemy_Prefix(SpeculativeRigidbody enemy)
