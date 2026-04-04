@@ -134,7 +134,9 @@ namespace ModdedBugFix.Mods
                 {
                     "idle",
                     "idle_left",
-                    "idle_right"
+                    "idle_right",
+                    "idle_front_left",
+                    "idle_front_right",
                 };
                 var sid = -1;
                 tk2dSpriteCollectionData coll = null;
